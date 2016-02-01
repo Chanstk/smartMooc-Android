@@ -1,0 +1,15 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/moreCourse"
+        android:icon="@drawable/morecourse"
+        android:title="更多"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/quit"
+        android:title="退出登录"
+        app:showAsAction="ifRoom"/>
+</menu>
