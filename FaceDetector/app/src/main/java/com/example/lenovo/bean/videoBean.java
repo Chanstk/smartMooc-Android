@@ -15,7 +15,7 @@ public class videoBean implements Serializable {
     private static final long serialVersionUID = -7060210544600464481L;
     public String title;
     public String provider;
-    public Drawable photo;
+    public String photo;
     public String url;
     public int money;
     public int numbers;
@@ -23,7 +23,7 @@ public class videoBean implements Serializable {
     public String teacher;
     public String detail_teacher;
     public String category;
-    public videoBean(String title, Drawable photo, String url,  String provider,int money, int numbers, String detail_course, String teacher, String detail_teacher,String category) {
+    public videoBean(String title, String photo, String url,  String provider,int money, int numbers, String detail_course, String teacher, String detail_teacher,String category) {
         this.title = title;
         this.provider = provider;
         this.photo = photo;

@@ -40,30 +40,27 @@ import java.util.Timer;
 public class frament_videoList extends Fragment implements ReflashListView.reflashListener {
     private View view;
     private ReflashListView listView;
-    private Drawable c, number, cccc, alg, java, compl, huibian;
     private List<videoBean> allcourse;
     private List<videoBean> math;
     private List<videoBean> language;
     private List<videoBean> computer;
     private listAdapter adapter;
-    private String state = "null";
+    private int state;
     private static final int MSG_INFO_LOADED = 1;
-    private static final int IMAGE_INFO_LOADED = 2;
     private Intent intent;
-    private int threadFlag;
-    private Bitmap bitmap;
+    private static final int DEFAULT =-1,ALLCOURSE =0,MATH = 1, LANGUAGE = 2,COMPUTER = 3;
     //判断当前课程列表属于哪个分类
-    public String getState() {
-        String string = new String();
-        if (state.equals("allcourse"))
-            string = "全部课程";
-        else if (state.equals("math"))
-            string = "数学";
-        else if (state.equals("computer"))
-            string = "计算机原理";
-        else if (state.equals("language"))
-            string = "编程语言";
-        return string;
+    public int getState() {
+        int index = -1;
+        if (state == ALLCOURSE)
+            index = ALLCOURSE;
+        else if (state == MATH)
+            index = MATH;
+        else if (state == LANGUAGE)
+            index = LANGUAGE;
+        else if (state == COMPUTER)
+            index = COMPUTER;
+        return index;
     }
     public frament_videoList() {
     }
@@ -71,22 +68,15 @@ public class frament_videoList extends Fragment implements ReflashListView.refla
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.video_list, container, false);
-        intent = new Intent();
-        intent.setClass(getActivity(), readyPlay.class);
         init();
         return view;
     }
 
     private void init() {
-        c = getResources().getDrawable(R.drawable.photo);
-        cccc = getResources().getDrawable(R.drawable.cccc);
-        compl = getResources().getDrawable(R.drawable.compl);
-        huibian = getResources().getDrawable(R.drawable.huibian);
-        alg = getResources().getDrawable(R.drawable.alg);
-        number = getResources().getDrawable(R.drawable.number);
-        java = getResources().getDrawable(R.drawable.java);
-        state = "allcourse";
+        state = ALLCOURSE;
         //listView初始化
+        intent = new Intent();
+        intent.setClass(getActivity(), readyPlay.class);
         listView = (ReflashListView) view.findViewById(R.id.videoList);
         listView.setInterface(this);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -102,68 +92,53 @@ public class frament_videoList extends Fragment implements ReflashListView.refla
             }
         });
         //获取课程数据
-        listView.reflesh();
-        getInfo("getCourse");
+        getInfo();
     }
 
-    private void getInfo(String order) {
-        if (order.equals("getCourse")) {
-            allcourse = new ArrayList<videoBean>();
-            math = new ArrayList<videoBean>();
-            language = new ArrayList<videoBean>();
-            computer = new ArrayList<videoBean>();
-            AVQuery<AVObject> query = AVQuery.getQuery("courseData");
-            query.findInBackground(new FindCallback<AVObject>() {
-                @Override
-                public void done(List<AVObject> list, AVException e) {
-                    if (e == null) {
-                        for (int i = 0; i < list.size(); i++) {
-                            videoBean bean = new videoBean();
-                            bean.detail_course = list.get(i).getString("detail_course");
-                            bean.title = list.get(i).getString("title");
-                            bean.teacher = list.get(i).getString("teacher");
-                            bean.provider = list.get(i).getString("provider");
-                            bean.numbers = list.get(i).getInt("numbers");
-                            bean.money = list.get(i).getInt("money");
-                            bean.detail_teacher = list.get(i).getString("detail_teacher");
-                            bean.category = list.get(i).getString("category");
-                            if(bean.title.equals("数字逻辑"))
-                                bean.photo = number;
-                            else if (bean.title.equals("面向对象程序设计"))
-                                bean.photo = cccc;
-                            else if (bean.title.equals("线性代数"))
-                                bean.photo = alg;
-                            else if (bean.title.equals("Java程序设计"))
-                                bean.photo = java;
-                            else if (bean.title.equals("c语言程序设计"))
-                                bean.photo = c;
-                            else if (bean.title.equals("汇编语言"))
-                                bean.photo = huibian;
-                            else if (bean.title.equals("编译原理"))
-                                bean.photo = compl;
-                            if (bean.category.equals("math"))
-                                math.add(bean);
-                            else if (bean.category.equals("computer"))
-                                computer.add(bean);
-                            else if (bean.category.equals("language"))
-                                language.add(bean);
-                            allcourse.add(bean);
-                        }
-                        if (state.equals("allcourse"))
-                            adapter = new listAdapter(allcourse);
-                        else if (state.equals("math"))
-                            adapter = new listAdapter(math);
-                        else if (state.equals("computer"))
-                            adapter = new listAdapter(computer);
-                        else if (state.equals("language"))
-                            adapter = new listAdapter(language);
-                        //通知获取数据完毕
-                        Message msg = mUIHandler.obtainMessage(MSG_INFO_LOADED);
-                        mUIHandler.sendMessage(msg);
+    private void getInfo() {
+        listView.reflesh();
+        allcourse = new ArrayList<videoBean>();
+        math = new ArrayList<videoBean>();
+        language = new ArrayList<videoBean>();
+        computer = new ArrayList<videoBean>();
+        AVQuery<AVObject> query = AVQuery.getQuery("courseData");
+        query.findInBackground(new FindCallback<AVObject>() {
+            @Override
+            public void done(List<AVObject> list, AVException e) {
+                if (e == null) {
+                    for (int i = 0; i < list.size(); i++) {
+                        videoBean bean = new videoBean();
+                        bean.detail_course = list.get(i).getString("detail_course");
+                        bean.title = list.get(i).getString("title");
+                        bean.teacher = list.get(i).getString("teacher");
+                        bean.provider = list.get(i).getString("provider");
+                        bean.numbers = list.get(i).getInt("numbers");
+                        bean.money = list.get(i).getInt("money");
+                        bean.detail_teacher = list.get(i).getString("detail_teacher");
+                        bean.category = list.get(i).getString("category");
+                        bean.photo = list.get(i).getAVFile("photo").getUrl();
+                        if (bean.category.equals("math"))
+                            math.add(bean);
+                        else if (bean.category.equals("computer"))
+                            computer.add(bean);
+                        else if (bean.category.equals("language"))
+                            language.add(bean);
+                        allcourse.add(bean);
                     }
+                    if (state==ALLCOURSE)
+                        adapter = new listAdapter(allcourse);
+                    else if (state==MATH)
+                        adapter = new listAdapter(math);
+                    else if (state==COMPUTER)
+                        adapter = new listAdapter(computer);
+                    else if (state==LANGUAGE)
+                    adapter = new listAdapter(language);
+                    //通知获取数据完毕
+                    Message msg = mUIHandler.obtainMessage(MSG_INFO_LOADED);
+                    mUIHandler.sendMessage(msg);
                 }
-            });
-        }
+            }
+        });
     }
 
     private Handler mUIHandler = new Handler() {
@@ -185,8 +160,7 @@ public class frament_videoList extends Fragment implements ReflashListView.refla
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                listView.reflesh();
-                getInfo("getCourse");
+                getInfo();
             }
         }, 1000);
     }
@@ -232,10 +206,8 @@ public class frament_videoList extends Fragment implements ReflashListView.refla
             }
             videoBean bean = list.get(position);
             if (bean != null) {
-                if (bean.photo == null)
-                    holder.image.setImageDrawable(c);
-                else
-                    holder.image.setImageDrawable(bean.photo);
+                holder.image.setTag(bean.photo);
+                new ImageLoader().showImage(holder.image,bean.photo);
                 holder.title.setText(bean.title);
                 holder.provider.setText(bean.provider);
                 holder.numbers.setText(bean.numbers + " 人在观看");
@@ -267,13 +239,13 @@ public class frament_videoList extends Fragment implements ReflashListView.refla
     //改变课程列表分类
     public void changeList(String order) {
         if (order.equals("allcourse"))
-            state = "allcourse";
+            state = ALLCOURSE;
         else if (order.equals("math"))
-            state = "math";
+            state = MATH;
         else if (order.equals("language"))
-            state = "language";
+            state = LANGUAGE;
         else if (order.equals("computer"))
-            state = "computer";
+            state = COMPUTER;
         listView.reflesh();//刷新效果显示
         onReflash();
     }
@@ -352,24 +324,7 @@ public class frament_videoList extends Fragment implements ReflashListView.refla
 
          };
      }*/
-    public static Bitmap getImage(String url) {
-        URL myFileUrl = null;
-        Bitmap bitmap = null;
-        try {
-            myFileUrl = new URL(url);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        try {
-            HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
-            conn.setDoInput(true);
-            conn.connect();
-            InputStream is = conn.getInputStream();
-            bitmap = BitmapFactory.decodeStream(is);
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bitmap;
-    }
+
+
+
 }
