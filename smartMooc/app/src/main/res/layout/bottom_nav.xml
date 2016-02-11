@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:hey="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:layout_gravity="bottom"
+    android:background="#dfe2e4">
+
+    <com.example.lenovo.definedWidget.changeColorIconWithText
+        android:id="@+id/toCourse"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:padding="5dp"
+        hey:mColor="#0066B3"
+        hey:mIcon="@drawable/course"
+        hey:mText="课程列表"
+        hey:mText_Size="13sp">
+
+    </com.example.lenovo.definedWidget.changeColorIconWithText>
+
+    <com.example.lenovo.definedWidget.changeColorIconWithText
+        android:id="@+id/toMy"
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:padding="5dp"
+        hey:mColor="#0066B3"
+        hey:mIcon="@drawable/my"
+        hey:mText="我的课程"
+        hey:mText_Size="13sp">
+
+    </com.example.lenovo.definedWidget.changeColorIconWithText>
+
+
+</LinearLayout>
