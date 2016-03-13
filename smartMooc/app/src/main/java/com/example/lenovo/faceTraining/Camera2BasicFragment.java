@@ -52,6 +52,7 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v13.app.FragmentCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -63,13 +64,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.lenovo.HttpRequest.HttpRequest;
+import com.example.lenovo.smartMooc.R;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -89,7 +95,7 @@ public class Camera2BasicFragment extends Fragment
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
-
+    private boolean pressButton = false;
     /**
      * Tag for the {@link Log}.
      */
@@ -287,6 +293,8 @@ public class Camera2BasicFragment extends Fragment
             switch (mState) {
                 case STATE_PREVIEW: {
                     // We have nothing to do when the camera preview is working normally.
+                    if(pressButton)
+                        getEachFrame();
                     break;
                 }
                 case STATE_WAITING_LOCK: {
@@ -424,7 +432,6 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         view.findViewById(R.id.picture).setOnClickListener(this);
-        view.findViewById(R.id.info).setOnClickListener(this);
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
         imageView = (ImageView) view.findViewById(R.id.look);
     }
@@ -521,8 +528,10 @@ public class Camera2BasicFragment extends Fragment
                 int sensorOrientation =
                         characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 boolean swappedDimensions = false;
+                Log.e("orientationsss", "" + displayRotation+" "+sensorOrientation);
                 switch (displayRotation) {
                     case Surface.ROTATION_0:
+                        swappedDimensions =true;
                     case Surface.ROTATION_180:
                         if (sensorOrientation == 90 || sensorOrientation == 270) {
                             swappedDimensions = true;
@@ -544,7 +553,6 @@ public class Camera2BasicFragment extends Fragment
                 int rotatedPreviewHeight = height;
                 int maxPreviewWidth = displaySize.x;
                 int maxPreviewHeight = displaySize.y;
-
                 if (swappedDimensions) {
                     rotatedPreviewWidth = height;
                     rotatedPreviewHeight = width;
@@ -823,6 +831,42 @@ public class Camera2BasicFragment extends Fragment
             setAutoFlash(captureBuilder);
 
             // Orientation
+            int rotation = activity.getWindowManager().getDefaultDisplay().getOrientation();
+            Log.i("rotations",""+rotation);
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(2));
+            CameraCaptureSession.CaptureCallback CaptureCallback
+                    = new CameraCaptureSession.CaptureCallback() {
+
+                @Override
+                public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                               @NonNull CaptureRequest request,
+                                               @NonNull TotalCaptureResult result) {
+                    unlockFocus();
+                }
+            };
+            mCaptureSession.stopRepeating();
+            mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+    private void getEachFrame() {
+        try {
+            final Activity activity = getActivity();
+            if (null == activity || null == mCameraDevice) {
+                return;
+            }
+            // This is the CaptureRequest.Builder that we use to take a picture.
+            final CaptureRequest.Builder captureBuilder =
+                    mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            captureBuilder.addTarget(mImageReader.getSurface());
+
+            // Use the same AE and AF modes as the preview.
+            captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+            setAutoFlash(captureBuilder);
+
+            // Orientation
             int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
 
@@ -836,14 +880,12 @@ public class Camera2BasicFragment extends Fragment
                     unlockFocus();
                 }
             };
-
             mCaptureSession.stopRepeating();
-            mCaptureSession.capture(captureBuilder.build(), CaptureCallback, null);
+            mCaptureSession.capture(captureBuilder.build(), CaptureCallback, mBackgroundHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
     }
-
     /**
      * Unlock the focus. This method should be called when still image capture sequence is
      * finished.
@@ -892,12 +934,25 @@ public class Camera2BasicFragment extends Fragment
         }
     }
     static Bitmap bitmap;
+    final static Map<String, String> data = new HashMap<String, String>();
     static private Handler hander = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 1:
                     imageView.setImageBitmap(bitmap);
+                    String photo =(String) msg.obj;
+                    data.put("" + photoCount, photo);
+                    if(photoCount==3)
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                HttpRequest request = HttpRequest.post("http://192.168.199.119:5000/data/post/");
+                                request.form(data).created();
+                                String personID = request.body();
+                                Log.i("personID",personID);
+                            }
+                        }).start();
                     break;
             }
         }
@@ -905,6 +960,7 @@ public class Camera2BasicFragment extends Fragment
     /**
      * Saves a JPEG {@link Image} into the specified {@link File}.
      */
+    private static int photoCount = 0;
     private static class ImageSaver implements Runnable {
 
         /**
@@ -922,16 +978,21 @@ public class Camera2BasicFragment extends Fragment
         }
         @Override
         public void run() {
+            if(photoCount>3)
+                return;
+            photoCount++;
             ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
-            bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             Message msg = hander.obtainMessage(1);
+            msg.obj = Base64.encodeToString(bytes, Base64.DEFAULT);
+            mImage.close();
             hander.sendMessage(msg);
         }
 
     }
-
+    private static int count = 0;
 
     /**
      * Compares two {@code Size}s based on their areas.

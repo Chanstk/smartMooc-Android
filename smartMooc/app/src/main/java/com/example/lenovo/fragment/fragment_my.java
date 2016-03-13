@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.avos.avoscloud.AVUser;
 import com.example.lenovo.bean.myCourseBean;
+import com.example.lenovo.faceTraining.CameraActivity;
 import com.example.lenovo.smartMooc.R;
 import com.example.lenovo.smartMooc.faceTraining;
 
@@ -60,7 +61,7 @@ public class fragment_my extends Fragment {
     }
     public void init(){
         faceDetect = new Intent();
-        faceDetect.setClass(getActivity(),faceTraining.class);
+        faceDetect.setClass(getActivity(),CameraActivity.class);
         faceDectector = (Button) view.findViewById(R.id.faceDectector);
         faceDectector.setOnClickListener(new View.OnClickListener() {
             @Override

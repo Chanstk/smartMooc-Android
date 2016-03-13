@@ -2,6 +2,7 @@ package com.example.lenovo.definedWidget;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,7 +16,6 @@ import android.widget.TextView;
 
 import com.example.lenovo.smartMooc.R;
 
-import io.vov.vitamio.utils.Log;
 
 /**
  * Created by lenovo on 2015/11/10.

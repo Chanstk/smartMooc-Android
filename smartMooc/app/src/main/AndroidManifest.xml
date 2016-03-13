@@ -12,6 +12,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
     <service android:name="com.avos.avoscloud.PushService" />
 
     <receiver android:name="com.avos.avoscloud.AVBroadcastReceiver" >
@@ -42,9 +43,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.example.lenovo.smartMooc.LocalPlay"
-            android:screenOrientation="landscape" />
         <activity
             android:name="com.example.lenovo.smartMooc.StreamingPlay"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden"
@@ -80,6 +78,15 @@
             android:label="@string/title_activity_face_detect"
             android:parentActivityName="com.example.lenovo.smartMooc.MainActivity"
             android:theme="@style/AppTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.lenovo.smartMooc.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.example.lenovo.faceTraining.CameraActivity"
+            android:label="@string/title_activity_face_detect"
+            android:parentActivityName="com.example.lenovo.smartMooc.MainActivity"
+            android:theme="@style/MaterialTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.lenovo.smartMooc.MainActivity" />

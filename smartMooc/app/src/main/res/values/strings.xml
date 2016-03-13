@@ -7,6 +7,10 @@
     <string name="drawerLayoutClose">全部课程</string>
     <string name="title_activity_login">登陆</string>
 
+    <string name="picture">Picture</string>
+    <string name="description_info">Info</string>
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
@@ -21,4 +25,14 @@
     </string>
     <string name="title_activity_signin">注册</string>
     <string name="title_activity_face_detect">faceDetect</string>
+    <string name="intro_message">
+        <![CDATA[
+
+
+            This sample demonstrates the basic use of Camera2 API. Check the source code to see how
+            you can display camera preview and take pictures.
+
+
+        ]]>
+    </string>
 </resources>
